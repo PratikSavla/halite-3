@@ -127,3 +127,11 @@ while True:
                 else:
                     position_choices.append(ship.position)
                     command_queue.append(ship.move(game_map.naive_navigate(ship, ship.position+Position(*Direction.Still))))
+
+    # ship costs 1000, dont make a ship on a ship or they both sink
+    if len(me.get_ships()) < math.ceil(game.turn_number / 25):
+        if me.halite_amount >= 1000 and not game_map[me.shipyard].is_occupied:
+            command_queue.append(me.shipyard.spawn())
+
+    # Send your moves back to the game environment, ending this turn.
+    game.end_turn(command_queue)
