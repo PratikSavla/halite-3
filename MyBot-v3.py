@@ -75,3 +75,55 @@ while True:
 
             if ship.halite_amount >= constants.MAX_HALITE*0.8:
                 ship_states[ship.id] = "depositing"
+
+        elif ship_states[ship.id] == "depositing":
+            f=0
+            if len(me.get_dropoffs())>0:
+                dd = {}
+                for dropoff in me.get_dropoffs():
+                    dd[dropoff.id] = game_map.calculate_distance(ship.position, dropoff.position)
+                ddi = max(dd, key=dd.get)
+                if ddi in dd.keys():
+                    # if game_map.calculate_distance(ship.position, me.shipyard.position)<dd[dropoff.id]:
+                    #     move = game_map.naive_navigate(ship, me.shipyard.position)
+                    #     upcoming_position = ship.position + Position(*move)
+                    #     if upcoming_position not in position_choices:
+                    #         position_choices.append(upcoming_position)
+                    #         command_queue.append(ship.move(move))
+                    #         if move == Direction.Still:
+                    #             ship_states[ship.id] = "collecting"
+                    #     else:
+                    #         position_choices.append(ship.position)
+                    #         command_queue.append(ship.move(game_map.naive_navigate(ship, ship.position+Position(*Direction.Still))))
+                    #     #if game_map.naive_navigate(ship, me.shipyard.position) == Direction.Still:
+                    #     #    ship_states[ship.id] = "collecting"
+                    #     #command_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+                    #     break
+                    #if game_map.calculate_distance(ship.position, me.shipyard.position)<dd[dropoff.id]:
+                    for dropoff in me.get_dropoffs():
+                        if dropoff.id == ddi:
+                            move = game_map.naive_navigate(ship, dropoff.position)
+                            upcoming_position = ship.position + Position(*move)
+                            if upcoming_position not in position_choices:
+                                position_choices.append(upcoming_position)
+                                command_queue.append(ship.move(move))
+                                if move == Direction.Still:
+                                    ship_states[ship.id] = "collecting"
+                            else:
+                                position_choices.append(ship.position)
+                                command_queue.append(ship.move(move))#game_map.naive_navigate(ship, ship.position+Position(*Direction.Still))))
+                            #if game_map.naive_navigate(ship, dropoff.position) == Direction.Still:
+                            #    ship_states[ship.id] = "collecting"
+                            #command_queue.append(ship.move(game_map.naive_navigate(ship, dropoff.position)))
+                            break
+            elif f==0:
+                move = game_map.naive_navigate(ship, me.shipyard.position)
+                upcoming_position = ship.position + Position(*move)
+                if upcoming_position not in position_choices:
+                    position_choices.append(upcoming_position)
+                    command_queue.append(ship.move(move))
+                    if move == Direction.Still:
+                        ship_states[ship.id] = "collecting"
+                else:
+                    position_choices.append(ship.position)
+                    command_queue.append(ship.move(game_map.naive_navigate(ship, ship.position+Position(*Direction.Still))))
