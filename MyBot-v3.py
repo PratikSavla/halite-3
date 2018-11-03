@@ -39,3 +39,39 @@ while True:
         if len(me.get_ships())/(len(me.get_dropoffs())+1)>5 and me.halite_amount>5000 and i==0 and game_map.calculate_distance(ship.position, me.shipyard.position)>10:
             command_queue.append(ship.make_dropoff())
             i=1
+
+        elif ship_states[ship.id] == "collecting":
+            # cardinals get surrounding cardinals using get_all_cardinals in positionals.py.
+            # reading this file, I can see they will be in order of:
+            # [Direction.North, Direction.South, Direction.East, Direction.West]
+
+            # maps with position orders, but also gives us all the surrounding possitions
+            position_options = ship.position.get_surrounding_cardinals() + [ship.position]
+
+            # we will be mapping the "direction" to the actual position
+
+            # position_dict = {(0, -1): Position(8, 15), (0, 1): Position(8, 17), (1, 0): Position(9, 16), (-1, 0): Position(7, 16), (0, 0): Position(8, 16)}
+            position_dict = {}
+
+            # maps the direction choice with halite
+            # halite_dict = {(0, -1): 708, (0, 1): 492, (1, 0): 727, (-1, 0): 472, (0, 0): 0}
+            halite_dict = {}
+
+            for n, direction in enumerate(direction_order):
+                position_dict[direction] = position_options[n]
+
+            for direction in position_dict:
+                position = position_dict[direction]
+                halite_amount = game_map[position].halite_amount
+                if position_dict[direction] not in position_choices:
+                    if direction == Direction.Still:
+                        halite_amount *= 4
+                    halite_dict[direction] = halite_amount
+
+            directional_choice = max(halite_dict, key=halite_dict.get)
+            position_choices.append(position_dict[directional_choice])
+
+            command_queue.append(ship.move(game_map.naive_navigate(ship, ship.position+Position(*directional_choice))))
+
+            if ship.halite_amount >= constants.MAX_HALITE*0.8:
+                ship_states[ship.id] = "depositing"
